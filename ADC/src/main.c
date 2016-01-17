@@ -45,8 +45,9 @@ RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
 
 
 void _ADC_Init(void) {
-ADC_InitTypeDef  ADC_InitStructure;
-
+ADC_InitTypeDef ADC_InitStructure;
+ADC_CommonInitTypeDef ADC_CommonInitStruct;
+		
 /*Enabling ADC clock*/
 RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
 RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC2, ENABLE);
@@ -68,15 +69,31 @@ RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC2, ENABLE);
 	ADC_InitStructure.ADC_Resolution = ADC_Resolution_10b;
 	ADC_InitStructure.ADC_ScanConvMode = DISABLE; 
 	ADC_Init(ADC2,&ADC_InitStructure);
-	
+
+/*ADC common init configuration for Multi mode ADC*/
+	ADC_CommonInitStruct.ADC_Mode = ADC_DualMode_RegSimult;
+	ADC_CommonInitStruct.ADC_DMAAccessMode = //ADC_DMAAccessMode_Disabled; ADC_DMAAccessMode_1; ADC_DMAAccessMode_2; ADC_DMAAccessMode_3 
+	ADC_CommonInitStruct.ADC_Prescaler = //ADC_Prescaler_Div2; ADC_Prescaler_Div4; ADC_Prescaler_Div6; ADC_Prescaler_Div8
+	ADC_CommonInitStruct.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles; //ADC_TwoSamplingDelay_5Cycles - i tak dalej po 1 do 20 cykli	
+
 /*Enabling ADC*/	
+	ADC_Cmd(ADC1, ENABLE);
+	ADC_Cmd(ADC2, ENABLE);
 
-ADC_Cmd(ADC1, ENABLE);
-ADC_Cmd(ADC2, ENABLE);
+/*Regular channels config*/
+	ADC_RegularChannelConfig(ADC1,ADC_Channel_1,1,ADC_SampleTime_144Cycles);
+	ADC_RegularChannelConfig(ADC2,ADC_Channel_2,1,ADC_SampleTime_144Cycles);
+
+/*Activating continuous mode*/
+	ADC_ContinuousModeCmd(ADC1, ENABLE);
+	ADC_ContinuousModeCmd(ADC2, ENABLE);
+
+/*DMA for Multi mode ADC*/
+	ADC_MultiModeDMARequestAfterLastTransferCmd(ENABLE);
 	
+/*Reading the ADCs converted values*/	
+	ADC_GetMultiModeConversionValue();
 }
-
-
 int main(void) {
 	
   /* Infinite loop */
